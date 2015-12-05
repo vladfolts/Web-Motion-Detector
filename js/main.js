@@ -97,18 +97,21 @@ function run() {
     var state = new State(width, height);
     var toSend = [];
 
+    function handleXhttp(){
+        if (this.readyState != 4)
+            return;
+
+        var ok = this.status >= 200 && this.status < 300;
+        document.getElementById( "post_result" ).innerHTML 
+            = "POST data: " + (ok ? ("OK (" + this.status + ")") : "failed");
+        window.setTimeout(post, ok ? 100 : 1000);
+    }
+
     function post(){
-        $.post("data", 
-               JSON.stringify(toSend))
-         .done(function(data, status){
-                    document.getElementById( "post_result" ).innerHTML = "POST data: OK";
-                    window.setTimeout(post, 100);
-                })
-         .fail(function(){
-                    toSend = [];
-                    document.getElementById( "post_result" ).innerHTML = "POST data: failed";
-                    window.setTimeout(post, 1000);
-                });
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = handleXhttp;
+        xhttp.open("POST", "data", true);
+        xhttp.send(JSON.stringify(toSend));
 
         toSend = [];
     }
