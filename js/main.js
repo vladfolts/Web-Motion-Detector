@@ -5,6 +5,10 @@ var webCamWindow = document.getElementById("webCamWindow");
 webCamWindow.style.width = width;
 webCamWindow.style.height = height;
 
+document.getElementById("preview").onclick = function(){
+    webCamWindow.style.visibility = this.checked ? "visible" : "hidden";
+};
+
 var noiseThreshold = 20;
 
 function diffPixel(p1, p2) {
