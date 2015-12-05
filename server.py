@@ -59,9 +59,9 @@ def main(port, sensitivity):
             while not q.empty():
                 q.get()
 
-if len(sys.argv) != 3:
-    print('Usage: server.py <port number> <sensitivity>')
-    exit(-1)
+args_num = len(sys.argv)
+port = 8000 if args_num < 2 else int(sys.argv[1])
+sensitivity = 100000 if args_num < 3 else int(sys.argv[2])
 
-main(int(sys.argv[1]), int(sys.argv[2]))
+main(port, sensitivity)
 
