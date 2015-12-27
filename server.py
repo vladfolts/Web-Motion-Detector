@@ -1,11 +1,12 @@
 #!/usr/bin/python
 
 from Queue import Queue
+from optparse import OptionParser
+from threading  import Thread
+import BaseHTTPServer
 import os
 import SimpleHTTPServer
-import SocketServer
-import sys
-from threading  import Thread
+import ssl
 import json
 
 q = Queue()
@@ -21,12 +22,23 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         except Exception, x:
             print("error: %s" % x)
         
+        self.send_response(200)
+        self.end_headers()
         self.wfile.write('OK')
         return
 
-def run(port):
+def run(options):
+    port = options.port
     print('serving at port: %d' % port)
-    httpd = SocketServer.TCPServer(("", port), ServerHandler)
+    httpd = BaseHTTPServer.HTTPServer(('', port), ServerHandler)
+
+    if options.certfile:
+        try:
+            httpd.socket = ssl.wrap_socket(httpd.socket, certfile=options.certfile, server_side=True)
+        except e:
+            print("ssl error: " + e)
+            return
+
     httpd.serve_forever()
 
 def notify(msg):
@@ -40,8 +52,8 @@ def notify(msg):
     MB_SYSTEMMODAL = 0x1000
     MessageBox(None, msg, 'Warning!', MB_SYSTEMMODAL)
 
-def main(port, sensitivity):
-    t = Thread(target=run, args=([port]))
+def main(options):
+    t = Thread(target=run, args=([options]))
     t.daemon = True # thread dies with the program
     t.start()
 
@@ -52,16 +64,21 @@ def main(port, sensitivity):
         except Exception:
             notify('no signal detected');
 
-        if i > sensitivity:
+        if i > options.sensitivity:
             notify('Incoming!')
 
             # clear queue (without analyzing) after notification is shown
             while not q.empty():
                 q.get()
 
-args_num = len(sys.argv)
-port = 8000 if args_num < 2 else int(sys.argv[1])
-sensitivity = 100000 if args_num < 3 else int(sys.argv[2])
+parser = OptionParser()
+parser.add_option("-p", "--port", default=8000, type=int, dest="port",
+                  help="serve at HTTP port [default: %default]")
+parser.add_option("-s", "--sensitivity", default=100000, type=int, dest="sensitivity",
+                  help="motion sensitivity [default: %default]")
+parser.add_option("-c", "--certfile", default=None, dest="certfile",
+                  help="use SSL with certificate file (path to .pem)")
+(options, args) = parser.parse_args()
 
-main(port, sensitivity)
+main(options)
 

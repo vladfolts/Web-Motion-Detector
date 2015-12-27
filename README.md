@@ -1,9 +1,9 @@
 # Detect motion using web camera and display notification
 
 ## How to use
-Run server.py specifying port number and threshold (sensitivity). 
+Run server.py. You can add "--help" parameter to see possible options (HTTP port number, threshold (sensitivity) and SSL if needed).
 
-    server.py 8000 100000
+    server.py -p 8000 -s 100000
 
 Open html page in a browser specifying the host where the server runs and the port number:
 
