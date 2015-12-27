@@ -35,8 +35,8 @@ def run(options):
     if options.certfile:
         try:
             httpd.socket = ssl.wrap_socket(httpd.socket, certfile=options.certfile, server_side=True)
-        except e:
-            print("ssl error: " + e)
+        except Exception, e:
+            print("ssl error: %s" % e)
             return
 
     httpd.serve_forever()
