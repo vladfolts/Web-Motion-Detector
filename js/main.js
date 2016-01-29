@@ -92,28 +92,15 @@ var requestAnimationFrame = window.requestAnimationFrame
                             };
 
 function run() {
+    var ws = new WebSocket("ws://" + window.location.host);
+
     startCamera();
 
     var state = new State(width, height);
     var toSend = [];
 
-    function handleXhttp(){
-        if (this.readyState != 4)
-            return;
-
-        var ok = this.status >= 200 && this.status < 300;
-        document.getElementById( "post_result" ).innerHTML 
-            = "POST data: " + (ok ? ("OK (" + this.status + ")") : "failed");
-        window.setTimeout(post, ok ? 100 : 1000);
-    }
-
-    function post(){
-        var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = handleXhttp;
-        xhttp.open("POST", "data", true);
-        xhttp.send(JSON.stringify(toSend));
-
-        toSend = [];
+    function showStatus(msg){
+        document.getElementById( "post_result" ).innerHTML = msg;
     }
 
     function step(){
@@ -124,8 +111,33 @@ function run() {
         requestAnimationFrame(step);
     }
 
+    function wsSend(){
+        switch (ws.readyState){
+            case 0:
+                showStatus("WebSocket: connecting...");
+                break;
+            case 1:
+                showStatus("WebSocket: OK");
+                if (toSend.length){
+                    ws.send(JSON.stringify(toSend));
+                    toSend = [];
+                }
+                break;
+            case 2:
+                showStatus("WebSocket: closing");
+                break;
+            case 3:
+                showStatus("WebSocket: closed");
+                break;
+            default:
+                showStatus("WebSocket: unknown status " + ws.readyState);
+                break;
+        }
+        window.setTimeout(wsSend, 100);
+    }
+    
     step();
-    post();
+    wsSend();
 }
 
 run();
