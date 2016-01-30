@@ -92,7 +92,8 @@ var requestAnimationFrame = window.requestAnimationFrame
                             };
 
 function run() {
-    var ws = new WebSocket("ws://" + window.location.host);
+    var wsProtocol = window.location.protocol == "https:" ? "wss:" : "ws:";
+    var ws = new WebSocket(wsProtocol + "//" + window.location.host);
 
     startCamera();
 
